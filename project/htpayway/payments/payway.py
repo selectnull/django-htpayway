@@ -6,9 +6,8 @@ import md5
 from collections import OrderedDict
 
 from htpayway.payments import PaymentGateway
-#from webshop.options import get_webshop_app_absolute_url
+# from webshop.options import get_webshop_app_absolute_url
 
-from mock import Mock
 
 class PayWay(PaymentGateway):
 
@@ -47,7 +46,9 @@ class PayWay(PaymentGateway):
     """
 
     def create_signature_for_create(self):
-        """Signature for seding request to HtPayWay"""
+        """
+        Signature for seding request to HtPayWay
+        """
         secret_key = self.config['secretkey']
         signature_string = 'authorize-form' + secret_key
         for v in self.data.values():
@@ -80,35 +81,37 @@ class PayWay(PaymentGateway):
         secret_key = self.config['secretkey']
         signature_string = 'authorize-form' + secret_key
         items = [kwargs['result_code'], kwargs['trace_ref'],
-                 self.data['order_id']]
+                 kwargs['order_id']]
 
         for v in items:
             signature_string += v
             signature_string += secret_key
         return md5.new(signature_string).hexdigest()
 
-
     def set_order(self, order):
         self.order = order
 
-
     def create(self):
         self.set_order(None)
-        ## iznos u lipama (10 kn = 1000)
+        # iznos u lipama (10 kn = 1000)
         amount = str(self.order.total).replace('.', '')
 
-        ## url na koji se vraca nakon placanja
+        # url na koji se vraca nakon placanja
         current_domain = Site.objects.get_current().domain
-        success_url = 'http://%s%s' % (current_domain, reverse('transaction_success'))
-        failure_url = 'http://%s%s' % (current_domain, reverse('transaction_failure'))
+        success_url = 'http://%s%s' %\
+            (current_domain, reverse('transaction_success'))
+        success_url = 'http://127.0.0.0:8000/payway/success/'
+        failure_url = 'http://%s%s' %\
+            (current_domain, reverse('transaction_failure'))
+        failure_url = 'http://127.0.0.0:8000/payway/failure/'
 
-        ## provjeri ako postoji trazeni prijevod za interface payment gatewaya
+        # provjeri ako postoji trazeni prijevod za interface payment gatewaya
         if self.lng not in ('hr', 'en', 'de', 'it', 'fr', 'ru'):
             self.lng = self.config['lang']
 
         self.data = OrderedDict([
             ('ShopID', self.config['shopid']),
-            ('OrderID', '10'),
+            ('OrderID', self.order.id),
             ('Amount', amount),
             ('AuthorizationType', self.config['authorization_type']),
             ('Language', str(self.lng)),
@@ -162,15 +165,16 @@ class PayWay(PaymentGateway):
 
         pg_id = request.GET.get('tid')
         pg_card_name = request.GET.get('card')
-        ## iznos u lipama (10 kn = 1000)
+        # iznos u lipama (10 kn = 1000)
         amount = str(self.order.total).replace('.', '')
 
-        ## kreiranje potpisa na temelju url-a
+        # kreiranje potpisa
         signature = self.create_signature_for_create()
 
-        ## ako je placanje uspjesno
+        # ako je placanje uspjesno
         if str(signature).upper() == str(request.GET.get('sig')).upper():
-            credit_card_note = 'TID: %s, CreditCard: %s' % (pg_id, pg_card_name)
+            credit_card_note = 'TID: %s, CreditCard: %s' % (pg_id,
+                                                            pg_card_name)
 
         return super(Payway, self).check(request, credit_card_note)
 
