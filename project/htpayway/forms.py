@@ -2,17 +2,17 @@ from django import forms
 
 
 class SuccessForm(forms.Form):
-    trace_ref = forms.CharField()
-    transaction_id = forms.CharField()
-    order_id = forms.CharField()
-    amount = forms.CharField()
-    installments = forms.CharField()
-    card_type_id = forms.CharField()
-    signature = forms.CharField()
+    pgw_trace_ref = forms.CharField()
+    pgw_transaction_id = forms.CharField()
+    pgw_order_id = forms.CharField()
+    pgw_amount = forms.CharField()
+    pgw_installments = forms.CharField()
+    pgw_card_type_id = forms.CharField()
+    pgw_signature = forms.CharField()
 
 
 class FailureForm(forms.Form):
-    result_code = forms.CharField()
-    trace_ref = forms.CharField()
-    order_id = forms.CharField()
-    signature = forms.CharField()
+    pgw_result_code = forms.CharField()
+    pgw_trace_ref = forms.CharField()
+    pgw_order_id = forms.CharField()
+    pgw_signature = forms.CharField()

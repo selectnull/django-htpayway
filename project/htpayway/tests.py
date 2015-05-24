@@ -13,7 +13,7 @@ class CustomPayWay(PayWay):
         self.config['shopid'] = '20000186'
         self.config['secretkey'] = "pZclhO{2G+RlMR#FWX{9g5'C"
         self.config['lang'] = 'hr'
-        self.config['authorization_type'] = '1'
+        self.config['authorization_type'] = '0'
         self.config['return_method'] = 'post'
         self.config['disable_installments'] = '1'
         self.config['form_url'] =\
@@ -22,7 +22,7 @@ class CustomPayWay(PayWay):
     def set_order(self, order):
         # mock data
         self.order = Mock(name='order')
-        self.order.id = '10'
+        self.order.id = '11'
         self.order.first_name = 'Igor'
         self.order.last_name = 'Pejic'
         self.order.address = 'Bujska'

@@ -1,93 +1,94 @@
-from django.shortcuts import render_to_response, RequestContext, render
-from django.template import Context
-from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render_to_response, RequestContext
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt
 
 from htpayway.models import Transaction
-from payments.payway import PayWay
 from htpayway.tests import CustomPayWay
 from htpayway.forms import SuccessForm, FailureForm
 
 
 def transaction_create(request):
     payway_instance = CustomPayWay('hr')
-    post_data, post_url = payway_instance.create()
-    authorization_type = payway_instance.data['AuthorizationType']
-    shop_id = payway_instance.data['ShopID']
+    form, post_url = payway_instance.create()
+    authorization_type = payway_instance.data['pgw_authorization_type']
+    shop_id = payway_instance.data['pgw_shop_id']
     amount = payway_instance.order.total
     order_id = payway_instance.order.id
     Transaction.objects.create(user=request.user, shop_id=shop_id,
                                order_id=order_id, amount=amount,
                                authorization_type=authorization_type,
                                )
-    return HttpResponseRedirect(post_url)
-    return render_to_response('creation.html')
+    return render_to_response('creation.html', {'form': form})
 
 
+# TODO fix csrf
+@csrf_exempt
 def transaction_success(request):
-    form = SuccessForm(request.GET or None)
-    if request.method == 'GET':
-        return render(request, 'success.html', {'form': form})
-    # if request.method == 'POST':
-    if request.method == 'GET' and form.is_valid():
-        print 'aaa'
+    form = SuccessForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
         payway_instance = CustomPayWay('hr')
-        order_id = request.cleaned_data['pgw_order_id']
+        order_id = form.cleaned_data['pgw_order_id']
         try:
-            transaction = Transaction.objects.get(id=order_id)
+            transaction = Transaction.objects.get(order_id=order_id)
         except ObjectDoesNotExist:
-            return HttpResponse('doom')
+            return render_to_response('success.html',
+                                      context_instance=RequestContext(request))
 
         # extract data from response
-        trace_ref = request.cleaned_data['pgw_trace_ref']
-        transaction_id = request.cleaned_data['pgw_transaction_id']
-        amount = request.cleaned_data['pgw_amount']
-        installments = request.cleaned_data['pgw_installments']
-        card_type_id = request.cleaned_data['pgw_card_type_id']
+        trace_ref = form.cleaned_data['pgw_trace_ref']
+        transaction_id = form.cleaned_data['pgw_transaction_id']
+        amount = form.cleaned_data['pgw_amount']
+        installments = form.cleaned_data['pgw_installments']
+        card_type_id = form.cleaned_data['pgw_card_type_id']
 
-        signature = PayWay.create_signature_for_success(
+        signature = payway_instance.create_signature_for_success(
             trace_ref=trace_ref, transaction_id=transaction_id,
             order_id=order_id, amount=amount, installments=installments,
             card_type_id=card_type_id
         )
 
-        if signature == request.cleaned_data['pgw_signature']:
+        if signature == form.cleaned_data['pgw_signature']:
             transaction.transaction_id = transaction_id
             payway_instance.after_success()
             transaction.success = True
+            transaction.status = 'su'
         else:
             transaction.success = False
 
-        transaction.signature = request.cleaned_data['pgw_signature']
-        transaction.status = 'su'
+        transaction.signature = form.cleaned_data['pgw_signature']
         transaction.save()
     return render_to_response('success.html',
                               context_instance=RequestContext(request))
 
 
+# TODO fix
+@csrf_exempt
 def transaction_failure(request):
-    if request.method == 'POST':
-        payway_instance = PayWay()
-        order_id = request.cleaned_data['pgw_order_id']
+    form = FailureForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        payway_instance = CustomPayWay('hr')
+        order_id = form.data['pgw_order_id']
         try:
-            transaction = Transaction.objects.get(id=order_id)
+            transaction = Transaction.objects.get(order_id=order_id)
         except ObjectDoesNotExist:
-            return HttpResponse('doom')
+            return render_to_response('failure.html',
+                                      context_instance=RequestContext(request))
 
         # extract data from response
-        result_code = request.cleaned_data['pgw_result_code']
-        trace_ref = request.cleaned_data['pgw_trace_ref']
-        signature = PayWay.create_signature_for_failure(
-            result_code=result_code, trace_ref=trace_ref,
-            order_id=order_id
+        result_code = form.cleaned_data['pgw_result_code']
+        trace_ref = form.cleaned_data['pgw_trace_ref']
+        signature = payway_instance.create_signature_for_failure(
+            pgw_result_code=result_code, pgw_trace_ref=trace_ref,
+            pgw_order_id=order_id
         )
 
-        if signature == request.cleaned_data['pgw_signature']:
+        if signature == form.cleaned_data['pgw_signature']:
             transaction.success = True
             payway_instance.after_failure()
+            transaction.status = 'fa'
         else:
             transaction.success = False
-        transaction.signature = request.cleaned_data['pgw_signature']
-        transaction.status = 'fa'
+        transaction.signature = form.cleaned_data['pgw_signature']
         transaction.save()
-    return HttpResponse('failure')
+    return render_to_response('failure.html',
+                              context_instance=RequestContext(request))
