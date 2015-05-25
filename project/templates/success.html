@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-{% block content %}
-{% csrf_token %}
-<p>Payment was succesful, check signature</p>
-<form action="/payway/success/" method="post">
-    {{ form }}
-    <input type="submit" value="Submit" />
-</form>
-{% endblock %}
