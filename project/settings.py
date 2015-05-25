@@ -104,6 +104,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 )
 
 ROOT_URLCONF = 'project.urls'
@@ -158,8 +159,8 @@ LOGIT_WEBSHOP_PAYMENT_METHOD = (
 
 LOGIT_WEBSHOP_PAYMENT_SETTINGS = {
     'kreditna_kartica_payway': {
-        'shopid':          '234',
-        'secretkey':       'so_secret',
+        'shopid':          '20000186',
+        'secretkey':       "pZclhO{2G+RlMR#FWX{9g5'C",
         'lang':            'hr',
         'authorization_type':    '0',
         'disable_installments':    '1',
@@ -167,3 +168,4 @@ LOGIT_WEBSHOP_PAYMENT_SETTINGS = {
         'form_url': 'https://pgwtest.ht.hr/services/payment/api/authorize-form'
     }
 }
+HTPAYWAY_CLASS = 'utils.ThisPayWay'

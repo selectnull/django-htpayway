@@ -2,11 +2,12 @@ from django.test import TestCase
 
 from mock import Mock
 
-from payments.payway import PayWay
+from . import ThisPayWay
 
 
-class CustomPayWay(PayWay):
+class CustomPayWay(ThisPayWay):
 
+    """
     def __init__(self, lng):
         self.lng = 'hr'
         self.config = {}
@@ -18,6 +19,7 @@ class CustomPayWay(PayWay):
         self.config['disable_installments'] = '1'
         self.config['form_url'] =\
             'https://pgwtest.ht.hr/services/payment/api/authorize-form'
+   """
 
     def set_order(self, order):
         # mock data
@@ -30,7 +32,7 @@ class CustomPayWay(PayWay):
         self.order.zipcode = '3342'
         self.order.country = 'Zimbabwe'
         self.order.phone = '0992347823'
-        self.order.email = 'sd@dfds.com'
+        self.order.email = 'igor.pejic@dr.com'
         self.order.total = 230.30
 
 
