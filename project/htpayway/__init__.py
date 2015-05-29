@@ -23,7 +23,7 @@ class PayWay(object):
         return_method - nacin povrata kupca na ducan. default: post
     """
     pgw_language = 'hr'
-    pgw_authorization_type = '0'
+    pgw_authorization_type = '1'
     pgw_return_method = 'post'
     pgw_disable_installments = '1'
 
@@ -77,7 +77,6 @@ class PayWay(object):
             if v is not None:
                 signature_string += v
             signature_string += self.pgw_secret_key
-        print signature_string
         return hashlib.sha512(signature_string).hexdigest()
 
     def create_signature_for_success(self, **kwargs):
