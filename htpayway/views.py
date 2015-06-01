@@ -22,7 +22,7 @@ def transaction_create(request):
                                pgw_amount=pgw_amount,
                                pgw_authorization_type=pgw_authorization_type,
                                )
-    return render_to_response('creation.html', {'form': form})
+    return render_to_response('htpayway/creation.html', {'form': form})
 
 
 @csrf_exempt
@@ -35,7 +35,7 @@ def transaction_success(request):
         try:
             transaction = Transaction.objects.get(pgw_order_id=pgw_order_id)
         except ObjectDoesNotExist:
-            return render_to_response('success.html',
+            return render_to_response('htpayway/success.html',
                                       context_instance=RequestContext(request))
 
         # extract data from response
@@ -64,7 +64,7 @@ def transaction_success(request):
 
         transaction.signature = form.cleaned_data['pgw_signature']
         transaction.save()
-    return render_to_response('success.html',
+    return render_to_response('htpayway/success.html',
                               context_instance=RequestContext(request))
 
 
@@ -78,7 +78,7 @@ def transaction_failure(request):
         try:
             transaction = Transaction.objects.get(pgw_order_id=pgw_order_id)
         except ObjectDoesNotExist:
-            return render_to_response('failure.html',
+            return render_to_response('htpayway/failure.html',
                                       context_instance=RequestContext(request))
 
         # extract data from response
@@ -97,5 +97,5 @@ def transaction_failure(request):
             transaction.success = False
         transaction.pgw_signature = form.cleaned_data['pgw_signature']
         transaction.save()
-    return render_to_response('failure.html',
+    return render_to_response('htpayway/failure.html',
                               context_instance=RequestContext(request))
