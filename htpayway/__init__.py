@@ -83,7 +83,6 @@ class PayWay(object):
             if v is not None:
                 signature_string += v
                 signature_string += self.pgw_secret_key
-        print signature_string
         return hashlib.sha512(signature_string).hexdigest()
 
     def create_signature_for_success(self, **kwargs):

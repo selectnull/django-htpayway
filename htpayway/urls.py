@@ -1,5 +1,8 @@
-from django.conf.urls.defaults import patterns, url
 from htpayway.views import create, failure, success
+try:
+    from django.conf.urls.defaults import patterns, url
+except ImportError:
+    from django.conf.urls import patterns, url
 
 
 urlpatterns = patterns(
