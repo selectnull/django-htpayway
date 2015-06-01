@@ -39,4 +39,9 @@ class Transaction(models.Model):
         db_table = 'htpayway_transactions'
 
     def __unicode__(self):
-        return u'{} {}'.format(self.user, self.created_on)
+        return u'{} {} {} {} {} {:.2f} kn'.format(
+            self.pgw_transaction_id, self.pgw_first_name,
+            self.pgw_last_name, self.user,
+            self.created_on,
+            self.amount
+        )
