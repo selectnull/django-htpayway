@@ -2,10 +2,12 @@ from django.shortcuts import render_to_response, RequestContext
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 
-from htpayway.models import Transaction
-from htpayway.forms import SuccessForm, FailureForm, PaymentForm
-from htpayway.utils import import_callable
-import settings
+from .models import Transaction
+from .forms import SuccessForm, FailureForm, PaymentForm
+from .utils import import_callable
+
+from django.conf import settings
+import datetime
 
 
 def create(request):
@@ -13,20 +15,28 @@ def create(request):
     payway_instance = payway_instance()
     payway_instance.create(request)
     form = PaymentForm(initial=payway_instance.data)
+
     pgw_authorization_type = payway_instance.pgw_authorization_type
     pgw_shop_id = payway_instance.pgw_shop_id
-    pgw_amount = payway_instance.order.total
-    pgw_order_id = payway_instance.order.id
-    Transaction.objects.create(user=request.user, pgw_shop_id=pgw_shop_id,
+    amount = payway_instance.order.total
+    pgw_amount = str(amount).replace(',', '').replace('.', '')
+    pgw_order_id = str(payway_instance.order.pk)
+    if request.user.is_authenticated():
+        user = request.user
+    else:
+        user = None
+    Transaction.objects.create(user=user, pgw_shop_id=pgw_shop_id,
                                pgw_order_id=pgw_order_id,
-                               pgw_amount=pgw_amount,
+                               pgw_amount=pgw_amount, amount=amount,
                                pgw_authorization_type=pgw_authorization_type,
+                               status='created'
                                )
     return render_to_response('htpayway/create.html', {'form': form})
 
 
 @csrf_exempt
 def success(request):
+    now = datetime.datetime.now()
     form = SuccessForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         payway_instance = import_callable(settings.HTPAYWAY_CLASS)
@@ -57,12 +67,13 @@ def success(request):
         if signature == form.cleaned_data['pgw_signature']:
             transaction.pgw_transaction_id = pgw_transaction_id
             payway_instance.after_success()
-            transaction.success = True
-            transaction.status = 'su'
+            transaction.response_signature_valid = True
+            transaction.status = 'succeeded'
         else:
-            transaction.success = False
+            transaction.response_signature_valid = False
 
         transaction.signature = form.cleaned_data['pgw_signature']
+        transaction.response_received_on = now
         transaction.save()
     return render_to_response('htpayway/success.html',
                               context_instance=RequestContext(request))
@@ -70,6 +81,7 @@ def success(request):
 
 @csrf_exempt
 def failure(request):
+    now = datetime.datetime.now()
     form = FailureForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         payway_instance = import_callable(settings.HTPAYWAY_CLASS)
@@ -91,11 +103,13 @@ def failure(request):
 
         if pgw_signature == form.cleaned_data['pgw_signature']:
             payway_instance.after_failure()
-            transaction.success = True
-            transaction.status = 'fa'
+            transaction.response_signature_valid = True
+            transaction.status = 'failed'
         else:
-            transaction.success = False
+            transaction.response_signature_valid = False
+
         transaction.pgw_signature = form.cleaned_data['pgw_signature']
+        transaction.response_received_on = now
         transaction.save()
     return render_to_response('htpayway/failure.html',
                               context_instance=RequestContext(request))
