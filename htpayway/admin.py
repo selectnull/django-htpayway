@@ -3,6 +3,19 @@ from htpayway.models import Transaction
 
 
 class TransactionAdmin(admin.ModelAdmin):
+
+    def pgw_name(self):
+        return '{} {}'.format(self.pgw_first_name, self.pgw_last_name)
+
+    list_display = (
+        'id', pgw_name, 'user', 'created_on', 'amount',
+        'pgw_transaction_id', 'status'
+    )
+    search_fields = [
+        'pgw_first_name', 'pgw_last_name', 'pgw_email',
+        'pgw_transaction_id',
+    ]
+    list_filter = ('created_on', 'status',)
     readonly_fields = ('created_on',)
     fieldsets = (
         ('Order', {
@@ -33,5 +46,6 @@ class TransactionAdmin(admin.ModelAdmin):
                 'pgw_email')
         }),
     )
+
 
 admin.site.register(Transaction, TransactionAdmin)
