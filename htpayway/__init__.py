@@ -24,8 +24,10 @@ class PayWay(object):
     """
     pgw_language = 'hr'
     pgw_authorization_type = '1'
-    pgw_return_method = 'post'
-    pgw_disable_installments = '1'
+    pgw_disable_installments = None
+    pgw_return_method = None
+    pgw_success_url = None
+    pgw_failure_url = None
 
     def create(self, request):
         self.form_url =\
@@ -37,14 +39,18 @@ class PayWay(object):
         self.set_request(request)
 
         # iznos u lipama (10 kn = 1000)
-        pgw_amount = str(self.order.total).replace('.', '')
-        current_domain = request.get_host()
+        pgw_amount = str(self.order.amount).replace('.', '')
 
         # url na koji se vraca nakon placanja
-        success_url = 'http://%s%s' %\
-            (current_domain, reverse('htpayway_success'))
-        failure_url = 'http://%s%s' %\
-            (current_domain, reverse('htpayway_failure'))
+        if self.pgw_success_url is None:
+            current_domain = request.get_host()
+            self.pgw_success_url = 'http://%s%s' %\
+                (current_domain, reverse('htpayway_success'))
+
+        if self.pgw_failure_url is None:
+            current_domain = request.get_host()
+            self.pgw_failure_url = 'http://%s%s' %\
+                (current_domain, reverse('htpayway_failure'))
 
         self.data = OrderedDict([
             ('pgw_shop_id', self.pgw_shop_id),
@@ -53,8 +59,8 @@ class PayWay(object):
             ('pgw_authorization_type', self.pgw_authorization_type),
             ('pgw_language', self.pgw_language),
             ('pgw_return_method', self.pgw_return_method),
-            ('pgw_success_url', success_url),
-            ('pgw_failure_url', failure_url),
+            ('pgw_success_url', self.pgw_success_url),
+            ('pgw_failure_url', self.pgw_failure_url),
             ('pgw_first_name', self.order.first_name),
             ('pgw_last_name', self.order.last_name),
             ('pgw_street', self.order.street),
@@ -73,10 +79,11 @@ class PayWay(object):
         Signature for seding request to HtPayWay
         """
         signature_string = 'authorize-form' + self.pgw_secret_key
-        for v in self.data.values():
+        for k, v in self.data.items():
             if v is not None:
                 signature_string += v
-            signature_string += self.pgw_secret_key
+                signature_string += self.pgw_secret_key
+        print signature_string
         return hashlib.sha512(signature_string).hexdigest()
 
     def create_signature_for_success(self, **kwargs):

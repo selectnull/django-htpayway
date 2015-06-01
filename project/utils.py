@@ -20,7 +20,8 @@ class ThisPayWay(PayWay):
         self.order.country = 'Hrvatska'
         self.order.telephone = '0992347823'
         self.order.email = 'dev-support@logit.hr'
-        self.order.total = Decimal('230.30')
+        self.order.amount = Decimal('230.30')
+        # url na koji se vraca nakon placanja
 
     def set_request(self, request):
         self.pgw_language = request.LANGUAGE_CODE

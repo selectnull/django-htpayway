@@ -1,48 +1,45 @@
+# -*- coding: utf-8 -*-
 from django.test import TestCase
+from htpayway import PayWay
 
 from mock import Mock
 
-from . import ThisPayWay
 
+class CustomPayWay(PayWay):
 
-class CustomPayWay(ThisPayWay):
-
-    """
-    def __init__(self, lng):
-        self.lng = 'hr'
-        self.config = {}
-        self.config['shopid'] = '20000186'
-        self.config['secretkey'] = "pZclhO{2G+RlMR#FWX{9g5'C"
-        self.config['lang'] = 'hr'
-        self.config['authorization_type'] = '0'
-        self.config['return_method'] = 'post'
-        self.config['disable_installments'] = '1'
-        self.config['form_url'] =\
-            'https://pgwtest.ht.hr/services/payment/api/authorize-form'
-   """
+    pgw_shop_id = '123'
+    pgw_secret_key = 'secretkey'
+    pgw_success_url = 'http://www.mojducan.com/success/narudžba456'
+    pgw_failure_url = 'http://www.mojducan.com/failure/narudžba456'
+    pgw_authorization_type = '0'
 
     def set_order(self, order):
         # mock data
         self.order = Mock(name='order')
-        self.order.id = '11'
-        self.order.first_name = 'Igor'
-        self.order.last_name = 'Pejic'
-        self.order.address = 'Bujska'
-        self.order.city = 'London'
-        self.order.zipcode = '3342'
-        self.order.country = 'Zimbabwe'
-        self.order.phone = '0992347823'
-        self.order.email = 'igor.pejic@dr.com'
-        self.order.total = 230.30
+        self.order.id = 'narudžba456'
+        self.order.first_name = None
+        self.order.last_name = None
+        self.order.street = None
+        self.order.city = None
+        self.order.post_code = None
+        self.order.country = None
+        self.order.telephone = None
+        self.order.email = None
+        self.order.amount = 789
+
+    def set_request(self, request):
+        self.pgw_language = ''
 
 
 class TestCustomPayWay(TestCase):
 
     def setUp(self):
-        self.custompw = CustomPayWay('hr')
+        self.custompw = CustomPayWay()
         self.custompw.set_order(None)
-        self.a = self.custompw.create()
-        print self.a
+        self.custompw.create(None)
 
-    def test_create_signature_for_create_ok(self):
-        pass
+    def test_create_signature_for_create(self):
+        self.assertEqual('8295bfece351e248e73870ad10ffb9dc63abd807582e5fdd4348'
+                         'd12284f6b8cc13e93eaa502034c1cb4114ddc84f'
+                         '19868d4ebfff55682e0c521a96a5022974cb',
+                         self.custompw.data['pgw_signature'])

@@ -18,7 +18,7 @@ def create(request):
 
     pgw_authorization_type = payway_instance.pgw_authorization_type
     pgw_shop_id = payway_instance.pgw_shop_id
-    amount = payway_instance.order.total
+    amount = payway_instance.order.amount
     pgw_amount = str(amount).replace(',', '').replace('.', '')
     pgw_order_id = str(payway_instance.order.id)
     pgw_signature = payway_instance.data['pgw_signature']
