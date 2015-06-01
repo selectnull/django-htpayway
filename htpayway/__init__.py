@@ -42,9 +42,9 @@ class PayWay(object):
 
         # url na koji se vraca nakon placanja
         success_url = 'http://%s%s' %\
-            (current_domain, reverse('transaction_success'))
+            (current_domain, reverse('htpayway_success'))
         failure_url = 'http://%s%s' %\
-            (current_domain, reverse('transaction_failure'))
+            (current_domain, reverse('htpayway_failure'))
 
         self.data = OrderedDict([
             ('pgw_shop_id', self.pgw_shop_id),

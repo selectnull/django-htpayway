@@ -1,10 +1,10 @@
 from django.conf.urls.defaults import patterns, url
-from htpayway.views import transaction_create, transaction_failure,\
-    transaction_success
+from htpayway.views import create, failure, success
+
 
 urlpatterns = patterns(
     '',
-    url(r'^create/$', transaction_create, name='transaction_create'),
-    url(r'^success/$', transaction_success, name='transaction_success'),
-    url(r'^failure/$', transaction_failure, name='transaction_failure'),
+    url(r'^create/$', create, name='htpayway_create'),
+    url(r'^success/$', success, name='htpayway_success'),
+    url(r'^failure/$', failure, name='htpayway_failure'),
 )

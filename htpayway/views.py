@@ -8,7 +8,7 @@ from htpayway.utils import import_callable
 import settings
 
 
-def transaction_create(request):
+def create(request):
     payway_instance = import_callable(settings.HTPAYWAY_CLASS)
     payway_instance = payway_instance()
     payway_instance.create(request)
@@ -22,11 +22,11 @@ def transaction_create(request):
                                pgw_amount=pgw_amount,
                                pgw_authorization_type=pgw_authorization_type,
                                )
-    return render_to_response('htpayway/creation.html', {'form': form})
+    return render_to_response('htpayway/create.html', {'form': form})
 
 
 @csrf_exempt
-def transaction_success(request):
+def success(request):
     form = SuccessForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         payway_instance = import_callable(settings.HTPAYWAY_CLASS)
@@ -69,7 +69,7 @@ def transaction_success(request):
 
 
 @csrf_exempt
-def transaction_failure(request):
+def failure(request):
     form = FailureForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         payway_instance = import_callable(settings.HTPAYWAY_CLASS)
