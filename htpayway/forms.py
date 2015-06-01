@@ -33,7 +33,7 @@ class PaymentForm(forms.Form):
     pgw_city = forms.CharField(max_length=20)
     pgw_post_code = forms.CharField(max_length=9)
     pgw_country = forms.CharField(max_length=50)
-    pgw_order_info = forms.CharField(max_length=50)
+    pgw_telephone = forms.CharField(max_length=50)
     pgw_email = forms.CharField(max_length=50)
     pgw_disable_installments = forms.CharField(max_length=1)
     pgw_signature = forms.CharField(max_length=40)

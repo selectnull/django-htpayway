@@ -24,8 +24,8 @@ class PayWay(object):
     """
     pgw_language = 'hr'
     pgw_authorization_type = '1'
-    pgw_disable_installments = None
-    pgw_return_method = None
+    pgw_disable_installments = '1'
+    pgw_return_method = 'post'
     pgw_success_url = None
     pgw_failure_url = None
 
@@ -82,7 +82,7 @@ class PayWay(object):
         for k, v in self.data.items():
             if v is not None:
                 signature_string += v
-                signature_string += self.pgw_secret_key
+            signature_string += self.pgw_secret_key
         return hashlib.sha512(signature_string).hexdigest()
 
     def create_signature_for_success(self, **kwargs):
