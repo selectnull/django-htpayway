@@ -153,19 +153,4 @@ LOGGING = {
     }
 }
 
-LOGIT_WEBSHOP_PAYMENT_METHOD = (
-    ('kreditna_kartica_payway', 'webshop.payments.payway.Payway', ),
-)
-
-LOGIT_WEBSHOP_PAYMENT_SETTINGS = {
-    'kreditna_kartica_payway': {
-        'shopid':          '20000186',
-        'secretkey':       "pZclhO{2G+RlMR#FWX{9g5'C",
-        'lang':            'hr',
-        'authorization_type':    '0',
-        'disable_installments':    '1',
-        'return_method': 'post',
-        'form_url': 'https://pgwtest.ht.hr/services/payment/api/authorize-form'
-    }
-}
 HTPAYWAY_CLASS = 'utils.ThisPayWay'
