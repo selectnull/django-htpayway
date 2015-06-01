@@ -14,11 +14,11 @@ class ThisPayWay(PayWay):
         self.order.id = '11'
         self.order.first_name = 'Igor'
         self.order.last_name = 'Pejic'
-        self.order.address = 'Bujska'
+        self.order.street = 'Bujska'
         self.order.city = 'Rijeka'
-        self.order.zipcode = '51000'
+        self.order.post_code = '51000'
         self.order.country = 'Hrvatska'
-        self.order.phone = '0992347823'
+        self.order.telephone = '0992347823'
         self.order.email = 'dev-support@logit.hr'
         self.order.total = Decimal('230.30')
 

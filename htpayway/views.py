@@ -20,17 +20,35 @@ def create(request):
     pgw_shop_id = payway_instance.pgw_shop_id
     amount = payway_instance.order.total
     pgw_amount = str(amount).replace(',', '').replace('.', '')
-    pgw_order_id = str(payway_instance.order.pk)
+    pgw_order_id = str(payway_instance.order.id)
+    pgw_signature = payway_instance.data['pgw_signature']
+    pgw_first_name = payway_instance.order.first_name
+    pgw_last_name = payway_instance.order.last_name
+    pgw_street = payway_instance.order.street
+    pgw_city = payway_instance.order.city
+    pgw_post_code = payway_instance.order.post_code
+    pgw_country = payway_instance.order.country
+    pgw_email = payway_instance.order.email
+
     if request.user.is_authenticated():
         user = request.user
     else:
         user = None
-    Transaction.objects.create(user=user, pgw_shop_id=pgw_shop_id,
-                               pgw_order_id=pgw_order_id,
-                               pgw_amount=pgw_amount, amount=amount,
-                               pgw_authorization_type=pgw_authorization_type,
-                               status='created'
-                               )
+    Transaction.objects.create(
+        user=user, pgw_shop_id=pgw_shop_id,
+        pgw_order_id=pgw_order_id,
+        pgw_amount=pgw_amount, amount=amount,
+        pgw_authorization_type=pgw_authorization_type,
+        pgw_signature=pgw_signature,
+        pgw_first_name=pgw_first_name,
+        pgw_last_name=pgw_last_name,
+        pgw_street=pgw_street,
+        pgw_city=pgw_city,
+        pgw_post_code=pgw_post_code,
+        pgw_country=pgw_country,
+        pgw_email=pgw_email,
+        status='created'
+    )
     return render_to_response('htpayway/create.html', {'form': form})
 
 

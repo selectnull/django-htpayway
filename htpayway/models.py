@@ -20,6 +20,13 @@ class Transaction(models.Model):
     pgw_amount = models.CharField(max_length=12)
     pgw_authorization_type = models.CharField(max_length=1)
     pgw_signature = models.CharField(max_length=128)
+    pgw_first_name = models.CharField(max_length=20)
+    pgw_last_name = models.CharField(max_length=20)
+    pgw_street = models.CharField(max_length=40)
+    pgw_city = models.CharField(max_length=20)
+    pgw_post_code = models.CharField(max_length=9)
+    pgw_country = models.CharField(max_length=50)
+    pgw_email = models.CharField(max_length=50)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
 
@@ -30,3 +37,6 @@ class Transaction(models.Model):
 
     class Meta:
         db_table = 'htpayway_transactions'
+
+    def __unicode__(self):
+        return u'{} {}'.format(self.user, self.created_on)
