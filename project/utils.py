@@ -5,7 +5,7 @@ from decimal import Decimal
 
 class ThisPayWay(PayWay):
 
-    pgw_shop_id = '20000186'
+    pgw_shop_id = '20000185'
     pgw_secret_key = "pZclhO{2G+RlMR#FWX{9g5'C"
 
     def set_order(self, order):
