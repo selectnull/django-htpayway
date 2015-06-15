@@ -1,5 +1,7 @@
 """ Utility functions for dynamic import. """
+
 from django.core import exceptions
+from django.conf import settings
 
 
 def import_callable(callable_path):
@@ -22,8 +24,10 @@ def import_callable(callable_path):
             (module_name, callable_name)
 
 
-def import_callable_or_none(callable_path):
+def get_payway_class(htpayway_class=None):
+    if htpayway_class is None:
+        htpayway_class = settings.HTPAYWAY_CLASS
     try:
-        return import_callable(callable_path)
-    except exceptions.ImproperlyConfigured:
-        return None
+        return import_callable(htpayway_class)
+    except AttributeError as e:
+        raise exceptions.ImproperlyConfigured(e)

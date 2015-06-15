@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
+from django.core import exceptions
+
 from htpayway import PayWay
+from htpayway.utils import get_payway_class
 
 from mock import Mock
 
@@ -29,6 +32,16 @@ class CustomPayWay(PayWay):
 
     def set_request(self, request):
         self.pgw_language = ''
+
+
+class TestImports(TestCase):
+    def test_missing_setting_raises(self):
+        with self.assertRaises(exceptions.ImproperlyConfigured):
+            get_payway_class('')
+
+    def test_get_payment_class(self):
+        pw = get_payway_class('htpayway.tests.CustomPayWay')()
+        self.assertEqual(pw.pgw_shop_id, '123')
 
 
 class TestCustomPayWay(TestCase):
