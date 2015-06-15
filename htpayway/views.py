@@ -30,10 +30,7 @@ def create(request):
     pgw_country = payway_instance.order.country
     pgw_email = payway_instance.order.email
 
-    if request.user.is_authenticated():
-        user = request.user
-    else:
-        user = None
+    user = request.user if request.user.is_authenticated else None
     Transaction.objects.create(
         user=user, pgw_shop_id=pgw_shop_id,
         pgw_order_id=pgw_order_id,
@@ -84,7 +81,7 @@ def success(request):
 
         if signature == form.cleaned_data['pgw_signature']:
             transaction.pgw_transaction_id = pgw_transaction_id
-            payway_instance.after_success()
+            payway_instance.on_success()
             transaction.response_signature_valid = True
             transaction.status = 'succeeded'
         else:
@@ -120,7 +117,7 @@ def failure(request):
         )
 
         if pgw_signature == form.cleaned_data['pgw_signature']:
-            payway_instance.after_failure()
+            payway_instance.on_failure()
             transaction.response_signature_valid = True
             transaction.status = 'failed'
         else:

@@ -5,13 +5,13 @@ from decimal import Decimal
 
 class ThisPayWay(PayWay):
 
-    pgw_shop_id = '20000186'
+    pgw_shop_id = '20000185'
     pgw_secret_key = "pZclhO{2G+RlMR#FWX{9g5'C"
 
     def set_order(self, order):
         # mock data
         self.order = Mock(name='order')
-        self.order.id = '11'
+        self.order.id = '12'
         self.order.first_name = 'Igor'
         self.order.last_name = 'Pejic'
         self.order.street = 'Bujska'
@@ -26,8 +26,8 @@ class ThisPayWay(PayWay):
     def set_request(self, request):
         self.pgw_language = request.LANGUAGE_CODE
 
-    def after_success(self):
+    def on_success(self):
         print 'succesfully overriden success'
 
-    def after_failure(self):
+    def on_failure(self):
         print 'succesfully overriden failure'

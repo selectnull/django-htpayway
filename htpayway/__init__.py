@@ -5,7 +5,6 @@ import hashlib
 
 
 class PayWay(object):
-
     """
     legend:
 
@@ -22,6 +21,7 @@ class PayWay(object):
         o placanju kreditnom karticom
         return_method - nacin povrata kupca na ducan. default: post
     """
+
     pgw_language = 'hr'
     pgw_authorization_type = '1'
     pgw_disable_installments = '1'
@@ -30,8 +30,7 @@ class PayWay(object):
     pgw_failure_url = None
 
     def create(self, request):
-        self.form_url =\
-            'https://pgwtest.ht.hr/services/payment/api/authorize-form'
+        self.form_url = 'https://pgwtest.ht.hr/services/payment/api/authorize-form'
 
         # call set_order(order) to change
         self.set_order(None)
@@ -113,18 +112,14 @@ class PayWay(object):
             signature_string += self.pgw_secret_key
         return hashlib.sha512(signature_string).hexdigest()
 
-# -------------------- Override these methods---------------------------------
     def set_order(self, order):
         self.order = order
-        pass
 
     def set_request(self, request):
+        self.request = request
+
+    def on_success(self):
         pass
 
-    def after_success(self):
-        print 'after_success_called'
-        pass
-
-    def after_failure(self):
-        print 'after_failure called'
+    def on_failure(self):
         pass
