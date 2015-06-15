@@ -78,9 +78,13 @@ class PayWay(object):
         Signature for seding request to HtPayWay
         """
         signature_string = 'authorize-form' + self.pgw_secret_key
-        for k, v in self.data.items():
-            if v is not None:
-                signature_string += v
+        hash_items = (
+            'pgw_shop_id', 'pgw_order_id', 'pgw_amount',
+            'pgw_authorization_type', 'pgw_language',
+            'pgw_success_url', 'pgw_failure_url'
+        )
+        for key in hash_items:
+            signature_string += self.data[key]
             signature_string += self.pgw_secret_key
         return hashlib.sha512(signature_string).hexdigest()
 
