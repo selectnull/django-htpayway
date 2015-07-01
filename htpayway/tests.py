@@ -3,8 +3,7 @@ from django.test import TestCase, RequestFactory
 from django.core import exceptions
 from django.contrib.auth.models import AnonymousUser
 
-from . import PayWay
-from .utils import get_payway_class, begin_transaction, format_amount
+from .utils import get_payway_class, begin_transaction, format_amount, PayWay
 from .models import Transaction
 
 from decimal import Decimal, InvalidOperation
