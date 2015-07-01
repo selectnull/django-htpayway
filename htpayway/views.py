@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response, RequestContext, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.http import Http404
+from django.http import HttpResponse, Http404
 
 from .models import Transaction
 from .forms import SuccessForm, FailureForm, PaymentForm
@@ -58,8 +58,10 @@ def success(request):
             transaction.save()
 
             if callback:
-                payway.on_success()
-        return render_to_response('htpayway/success.html',
+                result = payway.on_success(transaction)
+                if isinstance(result, HttpResponse):
+                    return result
+        return render_to_response('htpayway/success.html', result,
                                   context_instance=RequestContext(request))
     else:
         raise Http404
@@ -96,8 +98,10 @@ def failure(request):
             transaction.save()
 
             if callback:
-                payway.on_failure()
-        return render_to_response('htpayway/failure.html',
+                result = payway.on_failure(transaction)
+                if isinstance(result, HttpResponse):
+                    return result
+        return render_to_response('htpayway/failure.html', result,
                                   context_instance=RequestContext(request))
     else:
         raise Http404

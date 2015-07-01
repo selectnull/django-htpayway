@@ -33,11 +33,11 @@ class PayWay(object):
             signature_string += self.pgw_secret_key
         return hashlib.sha512(signature_string.encode('utf-8')).hexdigest()
 
-    def on_success(self):
-        pass
+    def on_success(self, transaction):
+        return {}
 
-    def on_failure(self):
-        pass
+    def on_failure(self, transaction):
+        return {}
 
 
 def import_callable(callable_path):
