@@ -5,7 +5,7 @@ from htpayway.models import Transaction
 class TransactionAdmin(admin.ModelAdmin):
 
     def pgw_name(self):
-        return '{} {}'.format(self.pgw_first_name, self.pgw_last_name)
+        return u'{} {}'.format(self.pgw_first_name, self.pgw_last_name)
 
     list_display = (
         'id', pgw_name, 'user', 'created_on', 'amount',
@@ -27,16 +27,18 @@ class TransactionAdmin(admin.ModelAdmin):
             )
         }),
         ('Response', {
-            'fields': ('response_received_on', 'response_signature_valid')
+            'fields': (
+                ('response_received_on', 'response_signature_valid'),
+                ('pgw_trace_ref', 'pgw_transaction_id'),
+                ('pgw_installments', 'pgw_card_type_id')
+            )
         }),
         ('Pgw data', {
             'fields': (
-                'pgw_transaction_id',
                 'pgw_shop_id',
                 'pgw_order_id',
                 'pgw_amount',
                 'pgw_authorization_type',
-                'pgw_signature',
                 'pgw_first_name',
                 'pgw_last_name',
                 'pgw_street',

@@ -1,0 +1,11 @@
+{% extends "htpayway/base.html" %}
+
+{% block content %}
+<p>Transaction initiated</p>
+<form id="payway-authorize-form" name="payway-authorize-form" method="POST" action="{{ form_url }}">
+    {{ form }}
+</form>
+<script>
+document.forms["payway-authorize-form"].submit();
+</script>
+{% endblock %}

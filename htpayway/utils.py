@@ -1,7 +1,11 @@
 """ Utility functions for dynamic import. """
 
 from django.core import exceptions
+from django.core.urlresolvers import reverse
 from django.conf import settings
+from decimal import Decimal
+
+from .models import Transaction
 
 
 def import_callable(callable_path):
@@ -27,7 +31,65 @@ def import_callable(callable_path):
 def get_payway_class(htpayway_class=None):
     if htpayway_class is None:
         htpayway_class = settings.HTPAYWAY_CLASS
-    try:
-        return import_callable(htpayway_class)
-    except AttributeError as e:
-        raise exceptions.ImproperlyConfigured(e)
+
+    if isinstance(htpayway_class, str):
+        try:
+            return import_callable(htpayway_class)
+        except AttributeError as e:
+            raise exceptions.ImproperlyConfigured(e)
+    else:
+        return htpayway_class
+
+
+def begin_transaction(request, pgw_data, htpayway_class=None):
+    """ This should be called from your view
+        to create Transaction object.
+    """
+
+    user = request.user if request.user.is_authenticated() else None
+    amount = pgw_data['amount']
+
+    tx = Transaction()
+    tx.status = 'created'
+    tx.user = user
+
+    """
+    result.pgw_shop_id = pgw_data['pgw_shop_id']
+    result.pgw_authorization_type = pgw_data['pgw_authorization_type']
+    result.pgw_order_id = pgw_data['pgw_order_id']
+
+    result.pgw_first_name = pgw_data.get('pgw_first_name', ''),
+    result.pgw_last_name = pgw_data.get('pgw_last_name', ''),
+    result.pgw_street = pgw_data.get('pgw_street', ''),
+    result.pgw_city = pgw_data.get('pgw_city', ''),
+    result.pgw_post_code = pgw_data.get('pgw_post_code', ''),
+    result.pgw_country = pgw_data.get('pgw_country', ''),
+    result.pgw_email = pgw_data.get('pgw_email', ''),
+    """
+
+    payway = get_payway_class(htpayway_class)()
+    payway_data = payway.pgw_data()
+    for x in payway_data:
+        setattr(tx, x, payway_data[x])
+
+    for x in pgw_data:
+        if x.startswith('pgw_'):
+            setattr(tx, x, pgw_data[x])
+
+    domain = request.get_host()
+    if tx.pgw_success_url is None:
+        tx.pgw_success_url = u'http://{}{}'.format(domain, reverse('htpayway_success'))
+    if tx.pgw_failure_url is None:
+        tx.pgw_failure_url = u'http://{}{}'.format(domain, reverse('htpayway_failure'))
+    tx.amount = amount
+    tx.pgw_amount = format_amount(amount)
+
+    tx.pgw_signature = tx.calc_outgoing_signature()
+
+    tx.save()
+    return tx
+
+
+def format_amount(amount):
+    a = Decimal(amount).quantize(Decimal('0.01'))
+    return str(a).replace('.', '')

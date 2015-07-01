@@ -1,4 +1,4 @@
-from htpayway.views import create, failure, success
+from htpayway.views import begin, failure, success
 try:
     from django.conf.urls.defaults import patterns, url
 except ImportError:
@@ -7,7 +7,7 @@ except ImportError:
 
 urlpatterns = patterns(
     '',
-    url(r'^create/$', create, name='htpayway_create'),
+    url(r'^begin/(?P<transaction_id>\d+)/$', begin, name='htpayway_begin'),
     url(r'^success/$', success, name='htpayway_success'),
     url(r'^failure/$', failure, name='htpayway_failure'),
 )

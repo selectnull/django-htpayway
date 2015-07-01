@@ -1,37 +1,22 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.core import exceptions
+from django.contrib.auth.models import AnonymousUser
 
-from htpayway import PayWay
-from htpayway.utils import get_payway_class
+from . import PayWay
+from .utils import get_payway_class, begin_transaction, format_amount
+from .models import Transaction
 
-from mock import Mock
+from decimal import Decimal, InvalidOperation
 
 
 class CustomPayWay(PayWay):
-
     pgw_shop_id = '123'
     pgw_secret_key = 'secretkey'
-    pgw_success_url = 'http://www.mojducan.com/success/narudžba456'
-    pgw_failure_url = 'http://www.mojducan.com/failure/narudžba456'
+    pgw_success_url = u'http://localhost:8000/payway/success/'
+    pgw_failure_url = u'http://localhost:8000/payway/failure/'
     pgw_authorization_type = '0'
-
-    def set_order(self, order):
-        # mock data
-        self.order = Mock(name='order')
-        self.order.id = 'narudžba456'
-        self.order.first_name = None
-        self.order.last_name = None
-        self.order.street = None
-        self.order.city = None
-        self.order.post_code = None
-        self.order.country = None
-        self.order.telephone = None
-        self.order.email = None
-        self.order.amount = 789
-
-    def set_request(self, request):
-        self.pgw_language = ''
+    pgw_language = 'hr'
 
 
 class TestImports(TestCase):
@@ -39,20 +24,64 @@ class TestImports(TestCase):
         with self.assertRaises(exceptions.ImproperlyConfigured):
             get_payway_class('')
 
-    def test_get_payment_class(self):
+    def test_get_payment_class_with_string(self):
         pw = get_payway_class('htpayway.tests.CustomPayWay')()
         self.assertEqual(pw.pgw_shop_id, '123')
 
+    def test_get_payment_class_with_class(self):
+        pw = get_payway_class(CustomPayWay)()
+        self.assertEqual(pw.pgw_shop_id, '123')
 
-class TestCustomPayWay(TestCase):
 
+class TestPayWay(TestCase):
     def setUp(self):
-        self.custompw = CustomPayWay()
-        self.custompw.set_order(None)
-        self.custompw.create(None)
+        self.payway = CustomPayWay()
 
     def test_create_signature_for_create(self):
-        self.assertEqual('8295bfece351e248e73870ad10ffb9dc63abd807582e5fdd4348'
-                         'd12284f6b8cc13e93eaa502034c1cb4114ddc84f'
-                         '19868d4ebfff55682e0c521a96a5022974cb',
-                         self.custompw.data['pgw_signature'])
+        request = RequestFactory().get('/')
+        request.user = AnonymousUser()
+        transaction = begin_transaction(
+            request, {'pgw_order_id': '1', 'amount': '123.00'},
+            htpayway_class=CustomPayWay)
+
+        self.assertEqual(
+            transaction.pgw_signature,
+            'fc424eb91bb260f8364326629b72de6ef7471cf4d09dc3c998657119cd0df2af' +
+            '1f313c21108659e87573b0b6525c74f223b0378ab65dbf3e9ffd84697c31b319'
+        )
+
+    def test_pgw_arguments_are_initialized(self):
+        p = CustomPayWay(pgw_email='a@a.com')
+        self.assertEqual(p.pgw_email, 'a@a.com')
+
+    def test_non_pgw_arguments_are_skipped(self):
+        p = CustomPayWay(foo=1)
+        self.assertFalse(hasattr(p, 'foo'))
+
+    def test_pgw_data_from_model(self):
+        p = Transaction(id=1, pgw_transaction_id=2, pgw_amount='300')
+        pgw_data = p.pgw_data()
+
+        self.assertNotIn('id', pgw_data)
+        self.assertEqual(pgw_data['pgw_transaction_id'], 2)
+        self.assertEqual(pgw_data['pgw_amount'], '300')
+
+    def test_pgw_data_from_class(self):
+        p = CustomPayWay(pgw_email='a@a.com')
+
+        self.assertEqual(p.pgw_data()['pgw_email'], 'a@a.com')
+
+
+class TestUtils(TestCase):
+    def test_format_amount_raises_on_non_decimal_input(self):
+        with self.assertRaises(InvalidOperation):
+            format_amount('')
+
+        with self.assertRaises(TypeError):
+            format_amount(None)
+
+    def test_format_amount_with_2_decimal_places(self):
+        self.assertEqual(format_amount('123.45'), '12345')
+
+    def test_format_amount_with_3_decimal_places(self):
+        self.assertEqual(format_amount(Decimal('1000.123')), '100012')
