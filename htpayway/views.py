@@ -27,6 +27,7 @@ def success(request):
         now = datetime.datetime.now()
         form = SuccessForm(request.POST)
         callback = False
+        result = {}
         if form.is_valid():
             payway = get_payway_class()()
             pgw_order_id = form.cleaned_data['pgw_order_id']
@@ -73,6 +74,7 @@ def failure(request):
         now = datetime.datetime.now()
         form = FailureForm(request.POST)
         callback = False
+        result = {}
         if form.is_valid():
             payway = get_payway_class()()
             pgw_order_id = form.cleaned_data['pgw_order_id']
