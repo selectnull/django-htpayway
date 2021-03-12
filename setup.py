@@ -8,7 +8,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-htpayway',
-    url='https://github.com/logithr/djangocms-htpayway',
+    url='https://github.com/selectnull/django-htpayway',
     author='Sasha Matijasic',
     author_email='sasha@selectnull.com',
     version=htpayway.__version__,
